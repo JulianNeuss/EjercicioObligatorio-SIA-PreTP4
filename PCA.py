@@ -1,16 +1,19 @@
 # Libraries
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np  # linear algebra
+import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 # %matplotlib inline
 
 df = pd.read_csv('europe.csv')
 
-# columns_names=df.columns.tolist()
+columns_names = df.columns.tolist()
+columns_names.pop(0)
+print(columns_names)
 # print("Columns names:")
 # print(columns_names)
 # Output
@@ -37,8 +40,8 @@ df = pd.read_csv('europe.csv')
 # plt.title('Correlation between different fearures')
 # plt.show()
 
-X = df.iloc[:,1:8].values
-y = df.iloc[:,0].values
+X = df.iloc[:, 1:8].values
+y = df.iloc[:, 0].values
 # print(X)
 # [[ 8.38710e+04  4.16000e+04  3.50000e+00  7.99100e+01  8.00000e-01
 #    3.00000e-02  4.20000e+00]
@@ -121,30 +124,39 @@ pca = PCA().fit(X_std)
 
 sklearn_pca = PCA(n_components=5)
 Y_sklearn = sklearn_pca.fit_transform(X_std)
+
+
 # print(Y_sklearn)
 
-def myplot(score,coeff,labels=None):
-    xs = score[:,0]
-    ys = score[:,1]
+def myplot(score, coeff, labels=None, variables=None):
+    plt.figure(figsize=(16,10))
+    xs = score[:, 0]
+    ys = score[:, 1]
     n = coeff.shape[0]
-    scalex = 1.0/(xs.max() - xs.min())
-    scaley = 1.0/(ys.max() - ys.min())
-    plt.scatter(xs * scalex,ys * scaley, c = y)
+    scalex = 1.0 / (xs.max() - xs.min())
+    scaley = 1.0 / (ys.max() - ys.min())
+    plt.scatter(xs * scalex, ys * scaley, c=y)
     for i in range(n):
-        plt.arrow(0, 0, coeff[i,0], coeff[i,1],color = 'r',alpha = 0.5)
+        plt.arrow(0, 0, coeff[i, 0], coeff[i, 1], color='r', alpha=0.5)
         if labels is None:
-            plt.text(coeff[i,0]* 1.15, coeff[i,1] * 1.15, "Var"+str(i+1), color = 'g', ha = 'center', va = 'center')
+            plt.text(coeff[i, 0] * 1.15, coeff[i, 1] * 1.15, "Var" + str(i + 1), color='g', ha='center', va='center')
         else:
-            plt.text(coeff[i,0]* 1.15, coeff[i,1] * 1.15, labels[i], color = 'g', ha = 'center', va = 'center')
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
+            plt.text(coeff[i, 0] * 1.15, coeff[i, 1] * 1.15, labels[i], color='g', ha='center', va='center')
+    for i in range(df.shape[0]):
+        plt.text(xs[i] * scalex * 1.05, ys[i] * scaley * 1.05, s=df.values[i, 0],
+                 fontdict=dict(color='white', size=10),
+                 bbox=dict(facecolor='black',alpha=0.5))
+
+    plt.xlim(-1, 1)
+    plt.ylim(-1, 1)
     plt.xlabel("PC{}".format(1))
     plt.ylabel("PC{}".format(2))
     plt.grid()
 
-#Call the function. Use only the 2 PCs.
 
-#Fix y data into numbers
+# Call the function. Use only the 2 PCs.
+temp = y
+# Fix y data into numbers
 counter = 0
 pais = []
 for i in y:
@@ -152,5 +164,5 @@ for i in y:
     counter += 1
 
 y = pais
-myplot(Y_sklearn[:,0:2],np.transpose(sklearn_pca.components_[0:2, :]))
+myplot(Y_sklearn[:, 0:2], np.transpose(sklearn_pca.components_[0:2, :]), columns_names, temp)
 plt.show()
